@@ -28,7 +28,7 @@ app.get('/api/nrl', async (req, res) => {
     // find one piece of data as a test
     // const test = $('.ladder__row').find('.ladder__item').text();
 
-    console.log($('[q-component=ladder-body-row]').find('.ladder__item'));
+    console.log($('[q-component="ladder-body-row"]'));
     /*     $('.ladder__table tbody tr').each((i, element) => {
       console.log($(element).find('.ladder__team').text());
       data.push({
@@ -49,4 +49,4 @@ app.get('/api/nrl', async (req, res) => {
   }
 });
 
-app.listen(port, () => console.log(`Example app listening on port ${port}!`));
+app.listen(port, () => console.log(`Listening on port ${port}.`));

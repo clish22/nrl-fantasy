@@ -11,7 +11,6 @@ function Home() {
       setData(data);
     }
     fetchData();
-    console.log(data);
   }, []);
 
   return (
