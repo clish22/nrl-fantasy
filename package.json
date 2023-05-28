@@ -1,0 +1,26 @@
+{
+  "name": "nrl-fantasy",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "client": "cd client && npm start",
+    "server": "cd server && npm start",
+    "dev": "concurrently --kill-others-on-fail \"npm run server\" \"npm run client\"",
+    "scraper": "cd scraper && npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/clish22/nrl-fantasy.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/clish22/nrl-fantasy/issues"
+  },
+  "homepage": "https://github.com/clish22/nrl-fantasy#readme",
+  "devDependencies": {
+    "concurrently": "^8.0.1"
+  }
+}
