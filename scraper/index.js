@@ -1,25 +1,25 @@
 const { questionPromise } = require('./utils/readline-interface.js');
 const { clearCollection } = require('./src/clear-collection.js');
+const { db } = require('./utils/db.js');
 
 async function main() {
-  const options = {
-    'clear collection': clearCollection,
-    exit: process.exit,
-  };
-  const optionKeys = Object.keys(options);
-  const optionValues = Object.values(options);
+  const options = ['clear collection', 'exit'];
   const action = await questionPromise(
-    `What would you like to do? \n- ${optionValues.join('\n- ')}\nAction:  `
+    `What would you like to do? \n- ${options.join('\n- ')}\nAction:  `
   );
 
-  optionKeys.forEach((option) => {
-    if (action === option) {
-      options[option]();
-    } else {
-      console.log('Invalid action.');
+  switch (action) {
+    case 'clear collection':
+      await clearCollection();
+      main();
+      break;
+    case 'exit':
       process.exit();
-    }
-  });
+      break;
+    default:
+      console.log('Invalid action.');
+      main();
+  }
 }
 
 main().catch((error) => {
