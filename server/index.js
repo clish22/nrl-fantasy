@@ -1,16 +1,19 @@
-// import modules
 const express = require('express');
 const app = express();
-const { db, connectDB } = require('./utils/db');
+const cors = require('cors');
+const adminRouter = require('./routes/admin');
+const teamsRouter = require('./routes/teams');
 require('dotenv').config();
-connectDB();
 
 const port = process.env.PORT || 3001;
 
-app.get('/api/nrl', async (req, res) => {
-  // fetch data from database
-  const data = await db.collection('teams').findOne({ CLUB: 'Brisbane Broncos' });
-  res.json(data);
-});
+// middleware
+app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// handle routes from /admin
+app.use('/admin', adminRouter);
+app.use('/teams', teamsRouter);
 
 app.listen(port, () => console.log(`Listening on port ${port}.`));

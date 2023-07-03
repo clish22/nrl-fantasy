@@ -1,9 +1,8 @@
 const { questionPromise } = require('./utils/readline-interface.js');
 const { clearCollection } = require('./src/clear-collection.js');
-const { db } = require('./utils/db.js');
 
 async function main() {
-  const options = ['clear collection', 'exit'];
+  const options = ['clear collection', 'scrape', 'exit'];
   const action = await questionPromise(
     `What would you like to do? \n- ${options.join('\n- ')}\nAction:  `
   );
@@ -13,11 +12,12 @@ async function main() {
       await clearCollection();
       main();
       break;
+    case 'scrape':
+      await scrapeLadder();
     case 'exit':
       process.exit();
-      break;
     default:
-      console.log('Invalid action.');
+      console.log('Invalid action.' + '\n');
       main();
   }
 }

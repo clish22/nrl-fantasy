@@ -1,21 +1,30 @@
-const mongoose = require('mongoose');
+const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
 const url = process.env.MONGODB_URI;
-const config = {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-};
+const config = { useUnifiedTopology: true };
+const dbName = 'nrl-fantasy';
 
-const connectDB = async () => {
+const client = new MongoClient(url, config);
+
+async function connectDB() {
   try {
-    await mongoose.connect(url, config);
-    console.log('MongoDB connected!');
+    await client.connect();
+    const db = client.db(dbName);
+    console.log('\nDB Connected.\n');
+    return db;
   } catch (err) {
-    console.log('Error connecting to MongoDB:', err.message);
+    console.log(err);
   }
-};
+}
 
-const db = mongoose.connection;
+async function disconnectDB() {
+  try {
+    await client.close();
+    console.log('\nDB Disconnected.\n');
+  } catch (err) {
+    console.log(err);
+  }
+}
 
-module.exports = { db, connectDB };
+module.exports = { connectDB, disconnectDB };

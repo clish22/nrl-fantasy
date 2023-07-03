@@ -1,5 +1,5 @@
 const { connectDB, disconnectDB } = require('../utils/db.js');
-const { rl, questionPromise } = require('../utils/readline-interface.js');
+const { questionPromise } = require('../utils/readline-interface.js');
 
 async function clearCollection() {
   try {
