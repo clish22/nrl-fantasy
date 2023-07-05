@@ -1,5 +1,6 @@
 const { questionPromise } = require('./utils/readline-interface.js');
 const { clearCollection } = require('./src/clear-collection.js');
+const { scrapeTeams } = require('./src/scrape-teams.js');
 
 async function main() {
   const options = ['clear collection', 'scrape', 'exit'];
@@ -13,7 +14,9 @@ async function main() {
       main();
       break;
     case 'scrape':
-      await scrapeLadder();
+      await scrapeTeams();
+      main();
+      break;
     case 'exit':
       process.exit();
     default:

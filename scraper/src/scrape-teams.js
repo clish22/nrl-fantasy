@@ -1,46 +1,75 @@
 const puppeteer = require('puppeteer');
-const parse5 = require('parse5');
-const fs = require('fs');
 const { connectDB, disconnectDB } = require('../utils/db.js');
 
-const teamURL = {
-  'Brisbane Broncos': 'https://www.nrl.com/clubs/brisbane-broncos/',
-  'Canberra Raiders': 'https://www.nrl.com/clubs/canberra-raiders/',
-  'Canterbury-Bankstown Bulldogs': 'https://www.nrl.com/clubs/canterbury-bankstown-bulldogs/',
-  'Cronulla-Sutherland Sharks': 'https://www.nrl.com/clubs/cronulla-sutherland-sharks/',
-  'Gold Coast Titans': 'https://www.nrl.com/clubs/gold-coast-titans/',
-  'Manly-Warringah Sea Eagles': 'https://www.nrl.com/clubs/manly-warringah-sea-eagles/',
-  'Melbourne Storm': 'https://www.nrl.com/clubs/melbourne-storm/',
-  'Newcastle Knights': 'https://www.nrl.com/clubs/newcastle-knights/',
-  'New Zealand Warriors': 'https://www.nrl.com/clubs/new-zealand-warriors/',
-  'North Queensland Cowboys': 'https://www.nrl.com/clubs/north-queensland-cowboys/',
-  'Parramatta Eels': 'https://www.nrl.com/clubs/parramatta-eels/',
-};
+async function getTeams() {
+  try {
+    const db = await connectDB();
+    const data = await db.collection('teams').find({}).toArray();
+    console.log('Teams found and returned.');
+    await disconnectDB();
+    return data;
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 async function scrapeTeams() {
   try {
+    const teams = await getTeams();
+
     const browser = await puppeteer.launch({ headless: 'new' });
     const page = await browser.newPage();
-    await page.goto(url);
-    await page.waitForSelector('#draw-content');
-    const draw = await page.evaluate(() => {
-      const findDraw = document.querySelector('#draw-content');
-      const outerHTML = findDraw.outerHTML;
-      return outerHTML;
-    });
 
-    const drawDOM = parse5.parse(draw);
+    for (team of teams) {
+      await page.goto(team.url, { waitUntil: 'networkidle2' });
+      await page.waitForSelector('main.l-page-primary');
 
-    const pTags = [];
-    findPTags(drawDOM, pTags);
-    console.log(pTags);
-    // const drawJSON = convertNodeToJSON(drawDOM);
+      const scraped = await page.evaluate(() => {
+        const findDtElement = (dtInnerText) => {
+          const elements = document.querySelectorAll('dt');
+          const element = [...elements].find((element) => element.innerText === dtInnerText);
+          const elementSibling = element.nextElementSibling;
+          const siblingInnerText = elementSibling.innerText;
+          return siblingInnerText;
+        };
 
-    const db = await connectDB();
+        const scrapeObject = {};
 
-    // insert into db
+        // scrape founded
+        scrapeObject.founded = Number(findDtElement('Founded:'));
 
-    await disconnectDB();
+        // scrape stadium
+        if (findDtElement('Stadium:').includes('\n')) {
+          const stadiums = findDtElement('Stadium:').split('\n');
+          const updatedStadiums = [];
+          for (stadium of stadiums) {
+            if (stadium.includes('-')) {
+              updatedStadiums.push(stadium.split(' - ')[0].trim());
+            } else {
+              updatedStadiums.push(stadium);
+            }
+          }
+          scrapeObject.stadium = updatedStadiums;
+        } else if (findDtElement('Stadium:').includes('-')) {
+          scrapeObject.stadium = findDtElement('Stadium:').split(' - ')[0].trim();
+        } else {
+          scrapeObject.stadium = findDtElement('Stadium:');
+        }
+
+        // scrape nickname
+        scrapeObject.nickname = findDtElement('Nickname:');
+
+        // scrape members
+        if (findDtElement('Members:') === '-') {
+          scrapeObject.members = 'N/A';
+        } else {
+          scrapeObject.members = findDtElement('Members:').replace(/,/g, '');
+        }
+
+        return scrapeObject;
+      });
+      console.log(scraped);
+    }
 
     await browser.close();
   } catch (err) {

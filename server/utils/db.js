@@ -11,7 +11,7 @@ async function connectDB() {
   try {
     await client.connect();
     const db = client.db(dbName);
-    console.log('\nDB Connected.\n');
+    console.log('\x1b[38;5;216m%s\x1b[0m', 'DB Connected.');
     return db;
   } catch (err) {
     console.log(err);
@@ -21,7 +21,7 @@ async function connectDB() {
 async function disconnectDB() {
   try {
     await client.close();
-    console.log('\nDB Disconnected.\n');
+    console.log('\x1b[38;5;216m%s\x1b[0m', 'DB Disconnected.');
   } catch (err) {
     console.log(err);
   }
