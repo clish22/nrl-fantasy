@@ -1,21 +1,11 @@
 const puppeteer = require('puppeteer');
 const { connectDB, disconnectDB } = require('../utils/db.js');
 
-async function getTeams() {
-  try {
-    const db = await connectDB();
-    const data = await db.collection('teams').find({}).toArray();
-    console.log('Teams found and returned.');
-    await disconnectDB();
-    return data;
-  } catch (err) {
-    console.log(err);
-  }
-}
-
 async function scrapeTeams() {
   try {
-    const teams = await getTeams();
+    const db = await connectDB();
+    const teams = await db.collection('teams').find({}).toArray();
+    console.log('Teams found and returned.');
 
     const browser = await puppeteer.launch({ headless: 'new' });
     const page = await browser.newPage();
@@ -51,9 +41,9 @@ async function scrapeTeams() {
           }
           scrapeObject.stadium = updatedStadiums;
         } else if (findDtElement('Stadium:').includes('-')) {
-          scrapeObject.stadium = findDtElement('Stadium:').split(' - ')[0].trim();
+          scrapeObject.stadium = [findDtElement('Stadium:').split(' - ')[0].trim()];
         } else {
-          scrapeObject.stadium = findDtElement('Stadium:');
+          scrapeObject.stadium = [findDtElement('Stadium:')];
         }
 
         // scrape nickname
@@ -63,15 +53,34 @@ async function scrapeTeams() {
         if (findDtElement('Members:') === '-') {
           scrapeObject.members = 'N/A';
         } else {
-          scrapeObject.members = findDtElement('Members:').replace(/,/g, '');
+          scrapeObject.members = Number(findDtElement('Members:').replace(/,/g, ''));
         }
 
         return scrapeObject;
       });
+
+      // each scraped object gets sent to the databse
+      try {
+        await db.collection('teams').updateOne(
+          { _id: team._id },
+          {
+            $set: {
+              founded: scraped.founded,
+              stadium: scraped.stadium,
+              nickname: scraped.nickname,
+              members: scraped.members,
+            },
+          }
+        );
+        console.log(`${team.teamName} updated on the database.`);
+      } catch (err) {
+        console.log(err);
+      }
       console.log(scraped);
     }
 
     await browser.close();
+    await disconnectDB();
   } catch (err) {
     console.log(err);
   }
