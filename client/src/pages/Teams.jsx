@@ -27,6 +27,8 @@ function Teams() {
           <tr>
             <th>Team Name</th>
             <th>URL</th>
+            <th>Founded</th>
+            <th>Members</th>
           </tr>
         </thead>
         <tbody>
@@ -36,8 +38,10 @@ function Teams() {
                 <tr key={team._id}>
                   <td>{team.teamName}</td>
                   <td>
-                    <a href={team.url}>{team.url}</a>
+                    <a href={team.nrlURL}>{team.nrlURL}</a>
                   </td>
+                  <td>{team.founded}</td>
+                  <td>{team.members}</td>
                 </tr>
               );
             })}
